@@ -18,4 +18,4 @@ pull:
     - apt-get install -y git
   script:
     - chmod +x ./pull.sh
-    - pull.sh
+    - ./pull.sh
