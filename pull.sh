@@ -1,5 +1,15 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
+
+for branch in $(git for-each-ref --format='%(refname)' refs/heads/); do
+	if [ "master" = "${branch#*/*/}" ]; then
+	    echo "no force"
+	    echo "${branch#*/*/}"
+	else
+	    echo "force"
+	    echo "${branch#*/*/}"
+	fi
+done
 
 mkdir git-magic
 cd git-magic
@@ -9,4 +19,13 @@ git remote add --mirror=fetch secondary https://git.dotplex.com/lennard.boediger
 git remote set-url secondary https://oauth2:$GITLAB_REPO_KEY@git.dotplex.com/lennard.boediger/mirror-test.git
 git fetch origin
 git push secondary --tags
-git push secondary --all
+
+for branch in $(git for-each-ref --format='%(refname)' refs/heads/); do
+	if [ "master" = "${branch#*/*/}" ]; then
+	    echo "${branch#*/*/}"
+	    git push secondary ${branch#*/*/}
+	else
+	    echo "${branch#*/*/}"
+	    git push secondary ${branch#*/*/} --force
+	fi
+done
