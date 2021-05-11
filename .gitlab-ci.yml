@@ -1,0 +1,27 @@
+stages:
+  - pull-github
+
+variables:
+  GIT_STRATEGY: clone			#This seems to have no effect also set in webinterface
+  GIT_DEPTH: 0					#This seems to have no effect also set in webinterface
+  GIT_SUBMODULE_STRATEGY: recursive
+
+pull:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "trigger" && $CI_COMMIT_BRANCH == "master"'
+  image: ubuntu:20.04
+  tags:
+    - docker
+  stage: pull-github
+  before_script:
+    - apt-get install -y git
+  script:
+    - mkdir git-magic
+    - cd git-magic
+    - git clone --mirror https://github.com/nitrokey/pynitrokey.git
+    - cd pynitrokey.git
+    - git remote add --mirror=fetch secondary https://git.dotplex.com/nitrokey/pynitrokey.git
+    - git remote set-url secondary https://oauth2:$GITLAB_REPO_KEY@git.dotplex.com/nitrokey/pynitrokey.git
+    - git fetch origin
+    - git push secondary --tags
+    - git push secondary --all
